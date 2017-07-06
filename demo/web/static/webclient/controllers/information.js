@@ -23,7 +23,7 @@ var controller = {
 		$("#view_chest").text(_("CHEST: "));
 		$("#view_leg").text(_("LEG: "));
 	},
-	
+
     // Set player's basic information
     setInfo: function(name, icon) {
         $("#name").text(name);
@@ -39,10 +39,8 @@ var controller = {
         if (max_exp > 0) {
             exp_str = exp + "/" + max_exp;
         }
-        var hunger_str = "--";
-        if (hungerMax > 0){
-            hunger_str = hunger + "/" + hungerMax;
-        }
+        var hunger_str = "X";
+        hunger_str = this.setHungerDescByValue(hunger);
 
         $("#level").text(level);
         $("#exp").text(exp_str);
@@ -50,6 +48,24 @@ var controller = {
         $("#hunger").text(hunger_str);
         $("#attack").text(attack);
         $("#defence").text(defence);
+    },
+
+    setHungerDescByValue:function(hunger){
+        if(this.valueBetween(hunger,80,100))
+            return _("HUNGER_FULL")
+        if(this.valueBetween(hunger,50,80))
+            return _("HUNGER_HIGH")
+        if(this.valueBetween(hunger,30,50))
+            return _("HUNGER_MEDIUM")
+        if(this.valueBetween(hunger,10,30))
+            return _("HUNGER_LOW")
+        if(this.valueBetween(hunger,0,10))
+            return _("HUNGER_DIE")
+    },
+
+    //check value in
+    valueBetween:function (x, min, max) {
+        return x>=min && x<=max;
     },
 
     // Set player's equipments.

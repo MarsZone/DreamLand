@@ -123,4 +123,9 @@ var local_string_zh_cn = {
     "CHEST: ": "身：",
     "LEG: ": "腿：",
     "HUNGER: ": "饥饿度：",
+    "HUNGER_FULL": "饱腹",
+    "HUNGER_HIGH": "满足",
+    "HUNGER_MEDIUM": "饥饿",
+    "HUNGER_LOW": "非常饥饿",
+    "HUNGER_DIE": "极度饥饿",
 };

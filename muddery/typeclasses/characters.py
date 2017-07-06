@@ -784,10 +784,11 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         if gametime_passed > (gametime.TIMEFACTOR * 4):
             self.last_game_time = gametime.gametime()
             if self.db.hunger > 0:
-                self.db.hunger = self.db.hunger - 1
-                self.db.hunger = self.db.hunger - 2
+                self.db.hunger = self.db.hunger + 1
             else:
                 self.db.hunger = 0
+            if self.db.hunger >= self.db.hungerMax:
+                self.db.hunger = self.db.hungerMax
         #self.msg({"msg": "Debug: gameTime:%s|last_game_time:%s" % (gametime.gametime(), gametime_passed)})
 
     def show_status(self):
