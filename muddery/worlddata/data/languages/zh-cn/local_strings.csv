@@ -59,6 +59,7 @@ category,origin,local
 ,"Quest {c%s{n's goals are accomplished.","任务{c%s{n目标已完成。"
 ,"You become {c%s{n.","你登录了{c%s{n。"
 ,"HP recovered by %s.","生命回复%s。"
+,"Hunger recovered by %s.","饥饿回复了%s。"
 ,"USE","使用"
 ,"Use","使用"
 ,"Can not discard this object.","无法丢弃这件物品。"

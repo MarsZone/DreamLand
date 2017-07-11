@@ -638,6 +638,9 @@ class foods(common_objects):
     # food's mp effect
     mp = models.IntegerField(blank=True, default=0)
 
+    # food' improve hunger
+    hunger = models.IntegerField(blank=True, default=0)
+
     class Meta:
         "Define Django meta options"
         abstract = True
