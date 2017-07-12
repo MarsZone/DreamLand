@@ -103,7 +103,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
         message = {"status": self.return_status()}
         self.msg(message)
 
-        self.msg({"msg": "Hungry cur:%s|max:%s" % (self.db.hunger, self.db.hungerMax)})
+        #self.msg({"msg": "Hungry cur:%s|max:%s" % (self.db.hunger, self.db.hungerMax)})
 
     def move_to(self, destination, quiet=False,
                 emit_to_obj=None, use_destination=True, to_none=False, move_hooks=True):

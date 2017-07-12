@@ -781,10 +781,11 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         update character hunger value
         """
         gametime_passed = (gametime.gametime() - self.last_game_time)
-        if gametime_passed > (gametime.TIMEFACTOR * 4):
+        #288s -> 28800s-> 8hour=>game time 48hour ->2days
+        if gametime_passed > (gametime.TIMEFACTOR * 288):
             self.last_game_time = gametime.gametime()
             if self.db.hunger > 0:
-                self.db.hunger = self.db.hunger + 1
+                self.db.hunger = self.db.hunger - 1
             else:
                 self.db.hunger = 0
             if self.db.hunger >= self.db.hungerMax:

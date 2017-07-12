@@ -35,6 +35,7 @@ class Food(MudderyFood):
 
         result = ""
         used = number
+
         if used > self.db.number:
             used = self.db.number
 

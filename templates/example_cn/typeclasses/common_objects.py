@@ -35,6 +35,7 @@ class Food(MudderyFood):
 
         result = ""
         used = number
+
         if used > self.db.number:
             used = self.db.number
 
@@ -56,6 +57,26 @@ class Food(MudderyFood):
                 user.show_status()
 
             result += _("HP recovered by %s.") % int(recover_hp)
+
+        if hasattr(self.dfield, "hunger"):
+            hunger = self.dfield.hunger * used
+
+            # recover caller's hp
+            recover_hunger = int(hunger)
+
+            if user.db.hunger < 0:
+                user.db.hunger = 0
+
+            if user.db.hunger + recover_hunger > user.db.hungerMax:
+                recover_hunger = user.db.hungerMax - user.db.hunger
+
+            # add actual hp value
+            if recover_hunger > 0:
+                user.db.hunger += recover_hunger
+                user.show_status()
+
+            #result += _("HP recovered by %s.") % int(recover_hp)
+            result += _("Hunger recovered by %s.") % int(recover_hunger)
 
         return result, used
 
