@@ -98,28 +98,39 @@ class MudderyPlayerCharacter(MudderyCharacter):
         # refresh data
         self.refresh_data()
 
-    def update_hunger_player(self):
+    def update_player_properties(self):
         self.update_hunger()
+        self.update_vitality()
         message = {"status": self.return_status()}
         self.msg(message)
-
-        #self.msg({"msg": "Hungry cur:%s|max:%s" % (self.db.hunger, self.db.hungerMax)})
 
     def move_to(self, destination, quiet=False,
                 emit_to_obj=None, use_destination=True, to_none=False, move_hooks=True):
         """
         Moves this object to a new location.
         """
-        if (not quiet) and self.solo_mode:
-            # If in solo mode, move quietly.
-            quiet = True
 
-        return super(MudderyPlayerCharacter, self).move_to(destination,
+
+        #test
+        if self.db.vitality > 10:
+            # cost player vitality temp 10
+            if self.db.vitality > 0:
+                self.db.vitality = self.db.vitality - 10
+            if self.db.vitality < 0:
+                self.db.vitality = 0
+
+            if (not quiet) and self.solo_mode:
+                # If in solo mode, move quietly.
+                quiet = True
+            return super(MudderyPlayerCharacter, self).move_to(destination,
                                                            quiet,
                                                            emit_to_obj,
                                                            use_destination,
                                                            to_none,
                                                            move_hooks)
+        else:
+            self.msg({"msg": _("Fail to Moving to %s ...") % self.location.name})
+            self.show_location()
 
     def at_object_receive(self, moved_obj, source_location):
         """
@@ -161,7 +172,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
         Called just after puppeting has been completed and all
         Player<->Object links have been established.
         """
-        TICKER_HANDLER.add(4, self.update_hunger_player)
+        TICKER_HANDLER.add(1, self.update_player_properties)
         self.available_channels = self.get_available_channels()
 
         # Send puppet info to the client first.
@@ -193,7 +204,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
         self.resume_combat()
 
     def at_post_unpuppet(self, player, session=None):
-        TICKER_HANDLER.remove(4, self.update_hunger_player)
+        TICKER_HANDLER.remove(1, self.update_player_properties)
 
     def at_pre_unpuppet(self):
         """
@@ -758,6 +769,8 @@ class MudderyPlayerCharacter(MudderyCharacter):
                   "max_mp": self.max_mp,
                   "hunger": self.db.hunger,
                   "hungerMax": self.db.hungerMax,
+                  "vitality": self.db.vitality,
+                  "vitalityMax": self.db.vitalityMax,
                   "mp": self.db.mp,
                   "attack": self.attack,
                   "defence": self.defence}

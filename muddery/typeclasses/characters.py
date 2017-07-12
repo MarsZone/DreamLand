@@ -81,6 +81,11 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
             self.db.hunger = 100
         if not self.attributes.has("hungerMax"):
             self.db.hungerMax = 100
+        # Vitality
+        if not self.attributes.has("vitality"):
+            self.db.vitality = 100
+        if not self.attributes.has("vitalityMax"):
+            self.db.vitalityMax = 100
 
         # init equipments
         if not self.attributes.has("equipments"):
@@ -134,6 +139,11 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
             self.db.hunger = 100
         if not self.attributes.has("hungerMax"):
             self.db.hungerMax = 100
+        # Vitality
+        if not self.attributes.has("vitality"):
+            self.db.vitality = 100
+        if not self.attributes.has("vitalityMax"):
+            self.db.vitalityMax = 100
 
         self.last_game_time = 0.0
 
@@ -781,7 +791,8 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         update character hunger value
         """
         gametime_passed = (gametime.gametime() - self.last_game_time)
-        #288s -> 28800s-> 8hour=>game time 48hour ->2days
+        # 28800s-> 8hour realtime=>game time 48hour ->2days
+        # 2 days(gametime) will reduce 100 point hunger
         if gametime_passed > (gametime.TIMEFACTOR * 288):
             self.last_game_time = gametime.gametime()
             if self.db.hunger > 0:
@@ -791,6 +802,19 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
             if self.db.hunger >= self.db.hungerMax:
                 self.db.hunger = self.db.hungerMax
         #self.msg({"msg": "Debug: gameTime:%s|last_game_time:%s" % (gametime.gametime(), gametime_passed)})
+
+    def update_vitality(self):
+        """
+        update reduce the vitality per/s
+        :return: 
+        """
+        if self.db.vitality > 0:
+            # temp add 1 per second.
+            self.db.vitality = self.db.vitality + 1
+        else:
+            self.db.vitality = 0
+        if self.db.vitality >= self.db.vitalityMax:
+            self.db.vitality = self.db.vitalityMax
 
     def show_status(self):
         """

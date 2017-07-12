@@ -339,7 +339,8 @@ var controller = {
     },
 
     // set player's status
-    setStatus: function(level, exp, max_exp, hp, max_hp,hunger,hungerMax, attack, defence) {
+    setStatus: function(level, exp, max_exp, hp, max_hp,hunger,hungerMax,
+                         vitality, vitalityMax, attack, defence) {
         $("#prompt_level").text(level);
 
         var exp_str = "--";
@@ -352,7 +353,8 @@ var controller = {
         $("#prompt_hp").text(hp_str);
 
         var frame_ctrl = this.getFrameController("#frame_information");
-        frame_ctrl.setStatus(level, exp, max_exp, hp, max_hp, hunger, hungerMax, attack, defence);
+        frame_ctrl.setStatus(level, exp, max_exp, hp, max_hp, hunger, hungerMax,
+                             vitality, vitalityMax, attack, defence);
     },
 
 	//////////////////////////////////////////

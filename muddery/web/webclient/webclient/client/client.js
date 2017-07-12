@@ -118,6 +118,8 @@ var client = {
                                          status["max_hp"],
                                          status["hunger"],
                                          status["hungerMax"],
+                                         status["vitality"],
+                                         status["vitalityMax"],
                                          status["attack"],
                                          status["defence"]);
                 }

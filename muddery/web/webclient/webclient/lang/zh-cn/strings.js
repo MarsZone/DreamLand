@@ -128,4 +128,5 @@ var local_string_zh_cn = {
     "HUNGER_MEDIUM": "饥饿",
     "HUNGER_LOW": "非常饥饿",
     "HUNGER_DIE": "极度饥饿",
+    "VITALITY: ": "体力: ",
 };

@@ -16,6 +16,7 @@ var controller = {
 		$("#view_exp").text(_("EXP: "));
 		$("#view_hp").text(_("HP: "));
 		$("#view_hunger").text(_("HUNGER: "));
+		$("#view_vitality").text(_("VITALITY: "));
 		$("#view_attack").text(_("ATTACK: "));
 		$("#view_defence").text(_("DEFENCE: "));
 		$("#view_head").text(_("HEAD: "));
@@ -32,7 +33,8 @@ var controller = {
     },
 
     // Set player character's information
-    setStatus: function(level, exp, max_exp, hp, max_hp, hunger, hungerMax, attack, defence) {
+    setStatus: function(level, exp, max_exp, hp, max_hp, hunger, hungerMax,
+                         vitality, vitalityMax, attack, defence) {
         var hp_str = hp + "/" + max_hp;
 
         var exp_str = "--";
@@ -42,9 +44,15 @@ var controller = {
         var hunger_str = "X";
         hunger_str = this.setHungerDescByValue(hunger);
 
+        var vitality_str = "--";
+        if(vitalityMax > 0){
+            vitality_str = vitality + "/" + vitalityMax;
+        }
+
         $("#level").text(level);
         $("#exp").text(exp_str);
         $("#hp").text(hp_str);
+        $("#vitality").text(vitality_str);
         $("#hunger").text(hunger_str);
         $("#attack").text(attack);
         $("#defence").text(defence);

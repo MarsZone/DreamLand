@@ -66,6 +66,7 @@ category,origin,local
 ,"DISCARD","丢弃"
 ,"Discard","丢弃"
 ,"Moving to %s ...","移动到%s。。。"
+,"Fail to Moving to %s ...","体力不足无法移动到%s。。。"
 ,"You died.","你死了。"
 ,"You are reborn at {c%s{n.","你在{c%s{n重生了。"
 ,"You will be reborn at {c%(p)s{n in {c%(s)s{n seconds.","你将在{c%(s)s{n秒后在{c%(p)s{n重生。"
