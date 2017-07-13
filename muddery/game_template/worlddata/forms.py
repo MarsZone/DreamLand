@@ -77,6 +77,15 @@ class FoodsForm(forms_base.FoodsForm):
 class SkillBooksForm(forms_base.SkillBooksForm):
     pass
 
+class CharacterAttributesForm(forms_base.CharacterAttributesForm):
+    pass
+
+class EquipmentAttributesForm(forms_base.EquipmentAttributesForm):
+    pass
+
+class FoodAttributesForm(forms_base.FoodAttributesForm):
+    pass
+
 class CharacterModelsForm(forms_base.CharacterModelsForm):
     pass
 

@@ -1,9 +1,11 @@
 """
 Player Characters
+
 Player Characters are (by default) Objects setup to be puppeted by Players.
 They are what you "see" in game. The Character class in this module
 is setup to be the "default" character type created by the default
 creation commands.
+
 """
 
 import traceback
@@ -16,12 +18,13 @@ from muddery.utils import defines, utils
 from muddery.utils.builder import build_object, get_object_record
 from muddery.utils.equip_type_handler import EQUIP_TYPE_HANDLER
 from muddery.utils.quest_handler import QuestHandler
-from muddery.utils.attribute_handler import AttributeHandler
+from muddery.utils.statement_attribute_handler import StatementAttributeHandler
 from muddery.utils.exception import MudderyError
 from muddery.utils.localized_strings_handler import _
 from muddery.utils.game_settings import GAME_SETTINGS
 from muddery.utils.dialogue_handler import DIALOGUE_HANDLER
 from muddery.worlddata.data_sets import DATA_SETS
+from muddery.utils.attributes_info_handler import CHARACTER_ATTRIBUTES_INFO
 from evennia.utils.utils import lazy_property
 from evennia.utils import logger
 from evennia.comms.models import ChannelDB
@@ -32,6 +35,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     """
     The Character defaults to implementing some of its hook methods with the
     following standard functionality:
+
     at_basetype_setup - always assigns the DefaultCmdSet to this object type
                     (important!)sets locks so character cannot be picked up
                     and its commands only be called by itself, not anyone else.
@@ -44,6 +48,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     at_pre_puppet - just before Player re-connects, retrieves the character's
                     old location and puts it back on the grid with a "charname
                     has connected" message echoed to the room
+
     """
 
     # initialize all handlers in a lazy fashion
@@ -51,9 +56,10 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def quest_handler(self):
         return QuestHandler(self)
 
+    # attributes used in statements
     @lazy_property
-    def custom_attr(self):
-        return AttributeHandler(self)
+    def statement_attr(self):
+        return StatementAttributeHandler(self)
 
     def at_object_creation(self):
         """
@@ -85,7 +91,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
                     self.db.career = career.key
             except Exception, e:
                 pass
-
+        
     def after_data_loaded(self):
         """
         """
@@ -109,28 +115,16 @@ class MudderyPlayerCharacter(MudderyCharacter):
         """
         Moves this object to a new location.
         """
+        if (not quiet) and self.solo_mode:
+            # If in solo mode, move quietly.
+            quiet = True
 
-
-        #test
-        if self.db.vitality > 10:
-            # cost player vitality temp 10
-            if self.db.vitality > 0:
-                self.db.vitality = self.db.vitality - 10
-            if self.db.vitality < 0:
-                self.db.vitality = 0
-
-            if (not quiet) and self.solo_mode:
-                # If in solo mode, move quietly.
-                quiet = True
-            return super(MudderyPlayerCharacter, self).move_to(destination,
+        return super(MudderyPlayerCharacter, self).move_to(destination,
                                                            quiet,
                                                            emit_to_obj,
                                                            use_destination,
                                                            to_none,
                                                            move_hooks)
-        else:
-            self.msg({"msg": _("Fail to Moving to %s ...") % self.location.name})
-            self.show_location()
 
     def at_object_receive(self, moved_obj, source_location):
         """
@@ -145,7 +139,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
 
         # send latest inventory data to player
         self.msg({"inventory": self.return_inventory()})
-
+    
     def at_object_left(self, moved_obj, target_location):
         """
         Called after an object has been removed from this object.
@@ -156,13 +150,14 @@ class MudderyPlayerCharacter(MudderyCharacter):
         
         """
         super(MudderyPlayerCharacter, self).at_object_left(moved_obj, target_location)
-
+        
         # send latest inventory data to player
         self.msg({"inventory": self.return_inventory()})
 
     def at_after_move(self, source_location):
         """
         We make sure to look around after a move.
+
         """
         self.msg({"msg": _("Moving to %s ...") % self.location.name})
         self.show_location()
@@ -171,10 +166,11 @@ class MudderyPlayerCharacter(MudderyCharacter):
         """
         Called just after puppeting has been completed and all
         Player<->Object links have been established.
+
         """
         TICKER_HANDLER.add(1, self.update_player_properties)
         self.available_channels = self.get_available_channels()
-
+        
         # Send puppet info to the client first.
         self.msg({"puppet": {"dbref": self.dbref,
                              "name": self.get_name(),
@@ -257,6 +253,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def get_available_channels(self):
         """
         Get available channel's info.
+
         Returns:
             (dict) channels
         """
@@ -320,12 +317,12 @@ class MudderyPlayerCharacter(MudderyCharacter):
             if not path["to"] in rooms:
                 neighbour = utils.search_obj_data_key(path["to"])
                 if neighbour:
-                    neighbour = neighbour[0]
+                    neighbour = neighbour[0]                    
                     rooms[neighbour.get_data_key()] = {"name": neighbour.get_name(),
                                                        "icon": neighbour.icon,
                                                        "area": neighbour.location and neighbour.location.get_data_key(),
                                                        "pos": neighbour.position}
-
+                    
         return {"rooms": rooms, "exits": exits}
 
     def show_location(self):
@@ -381,7 +378,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
                                                                "icon": neighbour.icon,
                                                                "area": neighbour.location and neighbour.location.get_data_key(),
                                                                "pos": neighbour.position}
-
+                    
                 msg["reveal_map"] = {"rooms": rooms, "exits": exits}
 
             # get appearance
@@ -399,7 +396,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
         model_name = getattr(self.dfield, "model", None)
         if not model_name:
             model_name = self.get_data_key()
-
+        
         # default objects
         object_records = DATA_SETS.default_objects.objects.filter(character=model_name)
 
@@ -414,12 +411,14 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def receive_objects(self, obj_list, mute=False, combat=False):
         """
         Add objects to the inventory.
+
         Args:
             obj_list: (list) a list of object keys and there numbers.
                              list item: {"object": object's key
                                          "number": object's number}
             mute: (boolean) do not send messages to the owner
             combat: (boolean) get objects in combat.
+
         Returns:
             (dict) a list of objects that not have been received and their reasons.
         """
@@ -573,6 +572,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
         Get the number of this object.
         Args:
             obj_key: (String) object's key
+
         Returns:
             int: object number
         """
@@ -589,11 +589,14 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def can_get_object(self, obj_key, number):
         """
         Check if the character can get these objects.
+
         Args:
             obj_key: (String) object's key
             number: (int) object's number
+
         Returns:
             boolean: can get
+
         Notice:
             If the character does not have this object, the return will be always true,
             despite of the number!
@@ -615,9 +618,11 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def use_object(self, obj, number=1):
         """
         Use an object.
+
         Args:
             obj: (object) object to use
             number: (int) number to use
+
         Returns:
             result: (string) the description of the result
         """
@@ -643,10 +648,12 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def remove_objects(self, obj_list):
         """
         Remove objects from the inventory.
+
         Args:
             obj_list: (list) a list of object keys and there numbers.
                              list item: {"object": object's key
                                          "number": object's number}
+
         Returns:
             boolean: success
         """
@@ -661,10 +668,12 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def remove_object(self, obj_key, number, mute=False):
         """
         Remove objects from the inventory.
+
         Args:
             obj_key: object's key
             number: object's number
             mute: send inventory information
+
         Returns:
             boolean: success
         """
@@ -740,7 +749,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
                     "number": item.db.number,   # item's number
                     "desc": item.db.desc,       # item's desc
                     "icon": getattr(item, "icon", None)}  # item's icon
-
+            
             if getattr(item, "equipped", False):
                 info["equipped"] = item.equipped
             inv.append(info)
@@ -761,19 +770,34 @@ class MudderyPlayerCharacter(MudderyCharacter):
         """
         Get character's status.
         """
-        status = {"level": self.db.level,
-                  "max_exp": self.max_exp,
-                  "exp": self.db.exp,
-                  "max_hp": self.max_hp,
-                  "hp": self.db.hp,
-                  "max_mp": self.max_mp,
-                  "hunger": self.db.hunger,
-                  "hungerMax": self.db.hungerMax,
-                  "vitality": self.db.vitality,
-                  "vitalityMax": self.db.vitalityMax,
-                  "mp": self.db.mp,
-                  "attack": self.attack,
-                  "defence": self.defence}
+        status = {"level": {"key": "level",
+                            "name": _("LEVEL"),
+                            "value": self.db.level,
+                            "order": 0},
+                  "max_exp": {"key": "max_exp",
+                              "name": _("MAX EXP"),
+                              "value": self.max_exp,
+                              "order": 1},
+                  "exp": {"key": "exp",
+                          "name": _("EXP"),
+                          "value": self.db.exp,
+                          "order": 2},
+                  "max_hp": {"key": "max_hp",
+                             "name": _("MAX HP"),
+                             "value": self.max_hp,
+                             "order": 3},
+                  "hp": {"key": "hp",
+                         "name": _("HP"),
+                         "value": self.db.hp,
+                         "order": 4}}
+
+        order = 5
+        for value in CHARACTER_ATTRIBUTES_INFO.all_values():
+            status[value["key"]] = {"key": value["key"],
+                                    "name": value["name"],
+                                    "value": getattr(self.cattr, value["key"]),
+                                    "order": order}
+            order += 1
 
         return status
 
@@ -830,7 +854,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
 
         # Put on new equipment, store object's dbref.
         self.db.equipments[position] = obj.dbref
-
+        
         # Set object's attribute 'equipped' to True
         obj.equipped = True
 
@@ -882,7 +906,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
 
         if equipment.position in self.db.equipments:
             self.db.equipments[equipment.position] = None
-
+        
         # Set object's attribute 'equipped' to False
         equipment.equipped = False
 
@@ -945,6 +969,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def at_enter_combat_mode(self, combat_handler):
         """
         Called when the character enters a combat.
+
         Returns:
             None
         """
@@ -959,11 +984,12 @@ class MudderyPlayerCharacter(MudderyCharacter):
         Args:
             winners: (List) all combat winners.
             losers: (List) all combat losers.
+
         Returns:
             None
         """
         self.msg({"combat_finish": {"win": True}})
-
+        
         super(MudderyPlayerCharacter, self).at_combat_win( winners, losers)
 
         # loot
@@ -988,19 +1014,22 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def at_combat_lose(self, winners, losers):
         """
         Called when the character loses the combat.
+
         Args:
             winners: (List) all combat winners.
             losers: (List) all combat losers.
+
         Returns:
             None
         """
         self.msg({"combat_finish": {"lose": True}})
-
+        
         super(MudderyPlayerCharacter, self).at_combat_lose(winners, losers)
 
     def at_combat_escape(self):
         """
         Called when the character escaped from the combat.
+
         Returns:
             None
         """
@@ -1011,6 +1040,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def at_leave_combat_mode(self):
         """
         Called when the character leaves a combat.
+
         Returns:
             None
         """
@@ -1026,6 +1056,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def show_enter_combat(self, combat_handler):
         """
         Show combat information to the player.
+
         Returns:
             None
         """
@@ -1041,6 +1072,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def resume_combat(self):
         """
         Resume unfinished combat.
+
         Returns:
             None
         """
@@ -1059,7 +1091,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
             self.reborn_time = 1
 
         super(MudderyPlayerCharacter, self).die(killers)
-
+        
         self.msg({"msg": _("You died.")})
 
         if self.reborn_time > 0:
@@ -1078,9 +1110,11 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def save_current_dialogue(self, sentences_list, npc):
         """
         Save player's current dialogues.
+
         Args:
             sentences_list: the list of current dialogues
             npc: NPC whom the player is talking to.
+
         Returns:
             None
         """
@@ -1114,6 +1148,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def clear_current_dialogue(self):
         """
         Clear player's current dialogues.
+
         Returns:
             None
         """
@@ -1123,6 +1158,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def resume_last_dialogue(self):
         """
         Restore player's dialogues when he return to game.
+
         Returns:
             None
         """
@@ -1134,7 +1170,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
             return
 
         current = self.db.current_dialogue
-
+        
         if not current["sentences_begin"]:
             return
 
@@ -1161,8 +1197,10 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def talk_to_npc(self, npc):
         """
         Talk to an NPC.
+
         Args:
             npc: NPC's object.
+
         Returns:
             None
         """
@@ -1171,17 +1209,19 @@ class MudderyPlayerCharacter(MudderyCharacter):
 
         # Get NPC's sentences_list.
         sentences_list = DIALOGUE_HANDLER.get_npc_sentences_list(self, npc)
-
+        
         self.save_current_dialogue(sentences_list, npc)
         self.msg({"dialogues_list": sentences_list})
 
     def show_dialogue(self, npc, dialogue, sentence):
         """
         Show a dialogue.
+
         Args:
             npc: (optional) NPC's object.
             dialogue: dialogue's key.
             sentence: sentence's ordinal.
+
         Returns:
             None
         """
@@ -1199,10 +1239,12 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def continue_dialogue(self, npc, dialogue, sentence):
         """
         Continue current dialogue.
+
         Args:
             npc: (optional) NPC's object.
             dialogue: current dialogue's key.
             sentence: current sentence's ordinal.
+
         Returns:
             None
         """
@@ -1250,6 +1292,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def level_up(self):
         """
         Upgrade level.
+
         Returns:
             None
         """
@@ -1261,9 +1304,11 @@ class MudderyPlayerCharacter(MudderyCharacter):
     def say(self, channel, message):
         """
         Say something in the channel.
+
         Args:
             channel: (string) channel's key.
             message: (string) message to say.
+
         Returns:
             None
         """
@@ -1273,7 +1318,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
 
         # Build the string to emit to neighbors.
         emit_string = "%s: %s" % (self.get_name(), message)
-
+            
         if not channel:
             # Say in the room.
             solo_mode = GAME_SETTINGS.get("solo_mode")
@@ -1286,7 +1331,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
             if not channels:
                 self.msg(_("You can not talk in this channel."))
                 return
-
+                
             channel_obj = channels[0]
             if not channel_obj.access(self, channel, "send"):
                 self.msg(_("You can not access this channel."))
