@@ -104,12 +104,6 @@ class MudderyPlayerCharacter(MudderyCharacter):
         # refresh data
         self.refresh_data()
 
-    def update_player_properties(self):
-        self.update_hunger()
-        self.update_vitality()
-        message = {"status": self.return_status()}
-        self.msg(message)
-
     def move_to(self, destination, quiet=False,
                 emit_to_obj=None, use_destination=True, to_none=False, move_hooks=True):
         """
@@ -168,7 +162,6 @@ class MudderyPlayerCharacter(MudderyCharacter):
         Player<->Object links have been established.
 
         """
-        TICKER_HANDLER.add(1, self.update_player_properties)
         self.available_channels = self.get_available_channels()
         
         # Send puppet info to the client first.
@@ -198,9 +191,6 @@ class MudderyPlayerCharacter(MudderyCharacter):
         self.resume_last_dialogue()
 
         self.resume_combat()
-
-    def at_post_unpuppet(self, player, session=None):
-        TICKER_HANDLER.remove(1, self.update_player_properties)
 
     def at_pre_unpuppet(self):
         """

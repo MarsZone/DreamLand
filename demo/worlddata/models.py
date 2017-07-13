@@ -481,3 +481,27 @@ class image_resources(model_base.image_resources):
 class icon_resources(model_base.icon_resources):
     "Store all icon resource's information."
     pass
+
+class character_attributes_info(model_base.character_attributes_info):
+    pass
+
+
+class equipment_attributes_info(model_base.equipment_attributes_info):
+    pass
+
+
+class food_attributes_info(model_base.food_attributes_info):
+    pass
+
+
+class character_attributes_info(model_base.character_attributes_info):
+    pass
+
+
+class equipment_attributes_info(model_base.equipment_attributes_info):
+    pass
+
+
+class food_attributes_info(model_base.food_attributes_info):
+    pass
+

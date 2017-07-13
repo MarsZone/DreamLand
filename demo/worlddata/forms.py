@@ -177,3 +177,27 @@ class Manager:
 
 
 Manager.init_data()
+
+class CharacterAttributesForm(forms_base.CharacterAttributesForm):
+    pass
+
+
+class EquipmentAttributesForm(forms_base.EquipmentAttributesForm):
+    pass
+
+
+class FoodAttributesForm(forms_base.FoodAttributesForm):
+    pass
+
+
+class CharacterAttributesForm(forms_base.CharacterAttributesForm):
+    pass
+
+
+class EquipmentAttributesForm(forms_base.EquipmentAttributesForm):
+    pass
+
+
+class FoodAttributesForm(forms_base.FoodAttributesForm):
+    pass
+
