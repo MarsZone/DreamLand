@@ -129,7 +129,7 @@ class MudderyPlayerCharacter(MudderyCharacter):
                                                            to_none,
                                                            move_hooks)
         else:
-            self.msg({"msg": _("Fail to Moving to %s ...") % self.location.name})
+            self.msg({"msg": _("Fail to Moving")})
             self.show_location()
 
     def at_object_receive(self, moved_obj, source_location):
