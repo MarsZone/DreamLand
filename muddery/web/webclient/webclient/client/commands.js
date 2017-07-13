@@ -18,11 +18,10 @@ var commands = {
         Evennia.msg("text", this.cmdString(cmd, args));
     },
     
-    doCastSkill : function(skill, target, combat) {
+    doCastSkill : function(skill, target) {
         var cmd = "castskill";
         var args = {"skill": skill,
-                    "target": target,
-                    "combat": combat};
+                    "target": target};
         Evennia.msg("text", this.cmdString(cmd, args));
     },
     

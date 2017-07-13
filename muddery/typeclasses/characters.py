@@ -10,13 +10,11 @@ creation commands.
 
 from __future__ import print_function
 
-import ast
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 from django.conf import settings
 from evennia.objects.objects import DefaultCharacter
 from evennia import create_script
-from evennia.typeclasses.models import DbHolder
 from evennia.utils import logger
 from evennia.utils.utils import lazy_property
 from muddery.typeclasses.objects import MudderyObject
@@ -26,9 +24,8 @@ from muddery.utils.skill_handler import SkillHandler
 from muddery.utils.loot_handler import LootHandler
 from muddery.worlddata.data_sets import DATA_SETS
 from muddery.utils.builder import delete_object
-from muddery.utils.attributes_info_handler import CHARACTER_ATTRIBUTES_INFO
 from muddery.utils.localized_strings_handler import _
-
+from evennia.utils import gametime
 
 class MudderyCharacter(MudderyObject, DefaultCharacter):
     """
@@ -79,6 +76,16 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
             self.db.mp = 1
         if not self.attributes.has("team"):
             self.db.team = 0
+        # By Mars
+        if not self.attributes.has("hunger"):
+            self.db.hunger = 100
+        if not self.attributes.has("hungerMax"):
+            self.db.hungerMax = 100
+        # Vitality
+        if not self.attributes.has("vitality"):
+            self.db.vitality = 100
+        if not self.attributes.has("vitalityMax"):
+            self.db.vitalityMax = 100
 
         # init equipments
         if not self.attributes.has("equipments"):
@@ -99,8 +106,8 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         self.target = None
         self.reborn_time = 0
         
-        # A temporary character will be deleted after the combat finished.
-        self.is_temp = False
+        # A cloned character will be deleted after the combat finished.
+        self.is_clone = False
 
     def after_data_loaded(self):
         """
@@ -108,14 +115,11 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         """
         super(MudderyCharacter, self).after_data_loaded()
 
-        # clear target
-        self.target = None
-
         # set reborn time
         self.reborn_time = getattr(self.dfield, "reborn_time", 0)
 
-        # A temporary character will be deleted after the combat finished.
-        self.is_temp = False
+        # A cloned character will be deleted after the combat finished.
+        self.is_clone = False
 
         # update equipment positions
         self.reset_equip_positions()
@@ -128,7 +132,21 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
 
         # refresh data
         self.refresh_data()
-        
+
+        # By Mars
+        # Add here because my character already created.
+        if not self.attributes.has("hunger"):
+            self.db.hunger = 100
+        if not self.attributes.has("hungerMax"):
+            self.db.hungerMax = 100
+        # Vitality
+        if not self.attributes.has("vitality"):
+            self.db.vitality = 100
+        if not self.attributes.has("vitalityMax"):
+            self.db.vitalityMax = 100
+
+        self.last_game_time = 0.0
+
     def after_data_key_changed(self):
         """
         Called at data_key changed.
@@ -192,7 +210,6 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         """
         # load level data
         self.load_model_data()
-        self.load_custom_attributes(CHARACTER_ATTRIBUTES_INFO)
         
         # load equips
         self.ues_equipments()
@@ -223,6 +240,9 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
 
         self.max_exp = getattr(self.dfield, "max_exp", 0)
         self.max_hp = getattr(self.dfield, "max_hp", 1)
+        self.max_mp = getattr(self.dfield, "max_mp", 1)
+        self.attack = getattr(self.dfield, "attack", 0)
+        self.defence = getattr(self.dfield, "defence", 0)
         self.give_exp = getattr(self.dfield, "give_exp", 0)
 
     def search_inventory(self, obj_key):
@@ -490,9 +510,9 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         target = self.search(target_key)
         self.attack_target(target, desc)
 
-    def attack_temp_current_target(self, desc=""):
+    def attack_clone_current_target(self, desc=""):
         """
-        Attack current target's temporary clone object.
+        Attack current target.
 
         Args:
             desc: (string) string to describe this attack
@@ -500,11 +520,11 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         Returns:
             None
         """
-        self.attack_temp_target(self.target.get_data_key(), self.target.db.level, desc)
+        self.attack_clone_target(self.target.get_data_key(), self.target.db.level, desc)
 
-    def attack_temp_target(self, target_key, target_level=0, desc=""):
+    def attack_clone_target(self, target_key, target_level=0, desc=""):
         """
-        Attack a temporary clone of a target. This creates a new character object for attack.
+        Attack the image of a target. This creates a new character object for attack.
         The origin target will not be affected.
 
         Args:
@@ -531,7 +551,7 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
             return False
 
         target.set_level(target_level)
-        target.is_temp = True
+        target.is_clone = True
         return self.attack_target(target, desc)
 
     ########################################
@@ -621,7 +641,7 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
         # remove combat commands
         self.cmdset.delete(settings.CMDSET_COMBAT)
         
-        if self.is_temp:
+        if self.is_clone:
             # notify its location
             location = self.location
             delete_object(self.dbref)
@@ -765,6 +785,36 @@ class MudderyCharacter(MudderyObject, DefaultCharacter):
 
         # recover hp
         self.db.hp = self.max_hp
+
+    def update_hunger(self):
+        """
+        update character hunger value
+        """
+        gametime_passed = (gametime.gametime() - self.last_game_time)
+        # 28800s-> 8hour realtime=>game time 48hour ->2days
+        # 2 days(gametime) will reduce 100 point hunger
+        if gametime_passed > (gametime.TIMEFACTOR * 288):
+            self.last_game_time = gametime.gametime()
+            if self.db.hunger > 0:
+                self.db.hunger = self.db.hunger - 1
+            else:
+                self.db.hunger = 0
+            if self.db.hunger >= self.db.hungerMax:
+                self.db.hunger = self.db.hungerMax
+        #self.msg({"msg": "Debug: gameTime:%s|last_game_time:%s" % (gametime.gametime(), gametime_passed)})
+
+    def update_vitality(self):
+        """
+        update reduce the vitality per/s
+        :return: 
+        """
+        if self.db.vitality > 0:
+            # temp add 1 per second.
+            self.db.vitality = self.db.vitality + 1
+        else:
+            self.db.vitality = 0
+        if self.db.vitality >= self.db.vitalityMax:
+            self.db.vitality = self.db.vitalityMax
 
     def show_status(self):
         """

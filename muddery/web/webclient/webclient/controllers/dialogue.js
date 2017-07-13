@@ -126,6 +126,8 @@ var controller = {
     },
 
     doDialogue: function(caller) {
+        this.doClosePopupBox();
+
         var dialogue = $(caller).data("dialogue");
         var sentence = $(caller).data("sentence");
         var npc = $(caller).data("npc");

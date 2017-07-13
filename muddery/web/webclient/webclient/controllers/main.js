@@ -87,7 +87,8 @@ var controller = {
     setDialogueList: function(data) {
         if (data.length == 0) {
             // close dialogue box
-            this.doClosePopupBox();
+            var frame_id = "#frame_dialogue";
+            $(frame_id).hide();
         }
         else {
             if ($("#frame_combat").is(":visible")) {
@@ -99,7 +100,7 @@ var controller = {
             else {
                 data_handler.dialogues_list = data;
                 dialogues = data_handler.dialogues_list.shift();
-	            this.showDialogue(dialogues);
+                this.showDialogue(dialogues);
             }
         }
     },
@@ -338,20 +339,22 @@ var controller = {
     },
 
     // set player's status
-    setStatus: function(status) {
-        $("#prompt_level").text(status["level"]["value"]);
+    setStatus: function(level, exp, max_exp, hp, max_hp,hunger,hungerMax,
+                         vitality, vitalityMax, attack, defence) {
+        $("#prompt_level").text(level);
 
         var exp_str = "--";
-        if (status["max_exp"]["value"] > 0) {
-            exp_str = status["exp"]["value"] + "/" + status["max_exp"]["value"];
+        if (max_exp > 0) {
+            exp_str = exp + "/" + max_exp;
         }
         $("#prompt_exp").text(exp_str);
 
-        var hp_str = status["hp"]["value"] + "/" + status["max_hp"]["value"];
+        var hp_str = hp + "/" + max_hp;
         $("#prompt_hp").text(hp_str);
 
         var frame_ctrl = this.getFrameController("#frame_information");
-        frame_ctrl.setStatus(status);
+        frame_ctrl.setStatus(level, exp, max_exp, hp, max_hp, hunger, hungerMax,
+                             vitality, vitalityMax, attack, defence);
     },
 
 	//////////////////////////////////////////

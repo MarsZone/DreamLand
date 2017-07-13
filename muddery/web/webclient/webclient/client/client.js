@@ -111,7 +111,17 @@ var client = {
                 }
                 else if (key == "status") {
                     var status = data[key];
-                    controller.setStatus(status);
+                    controller.setStatus(status["level"],
+                                         status["exp"],
+                                         status["max_exp"],
+                                         status["hp"],
+                                         status["max_hp"],
+                                         status["hunger"],
+                                         status["hungerMax"],
+                                         status["vitality"],
+                                         status["vitalityMax"],
+                                         status["attack"],
+                                         status["defence"]);
                 }
                 else if (key == "equipments") {
 			        controller.setEquipments(data[key]);

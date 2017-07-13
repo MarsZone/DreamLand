@@ -880,8 +880,7 @@ class CmdCastSkill(Command):
 
         {"cmd":"castskill",
          "args":{"skill":<skill's key>,
-                 "target":<skill's target>,
-                 "combat":<cast in combat>}
+                 "target":<skill's target>}
         }
     
     """
@@ -892,39 +891,30 @@ class CmdCastSkill(Command):
     def func(self):
         "Cast a skill."
         caller = self.caller
-        args = self.args
 
         if not caller.is_alive():
             caller.msg({"alert":_("You are died.")})
             return
 
-        if not args:
+        if not self.args:
             caller.msg({"alert":_("You should select a skill to cast.")})
             return
 
-        # find skill
         skill_key = None
-        target = None
-
-        if isinstance(args, basestring):
+        if isinstance(self.args, basestring):
             # If the args is a skill's key.
-            skill_key = args
+            skill_key = self.args
         else:
             # If the args is skill's key and target.
-            if not "skill" in args:
+            if not "skill" in self.args:
                 caller.msg({"alert":_("You should select a skill to cast.")})
                 return
-            skill_key = args["skill"]
+            skill_key = self.args["skill"]
 
-            # Check combat
-            if "combat" in args:
-                if args["combat"]:
-                    # must be in a combat
-                    if not caller.is_in_combat():
-                        return
-            # Get target
-            if "target" in args:
-                target = caller.search(args["target"])
+        # Get target
+        target = None
+        if "target" in self.args:
+            target = caller.search(self.args["target"])
 
         try:
             # Prepare to cast this skill.

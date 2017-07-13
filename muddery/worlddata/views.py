@@ -21,13 +21,11 @@ from muddery.utils import writers
 from muddery.utils.builder import build_all
 from muddery.utils.localized_strings_handler import _, LOCALIZED_STRINGS_HANDLER
 from muddery.utils.game_settings import GAME_SETTINGS
-from muddery.worlddata.editor.page_view import PageView
-from muddery.worlddata.editor.fixed_page_view import FixedPageView
+from muddery.worlddata.editor import page_view
 from muddery.worlddata.editor.form_view import FormView
 from muddery.worlddata.editor.single_form_view import SingleFormView
 from muddery.worlddata.editor.relative_view import RelativeView
 from muddery.worlddata.editor.dialogue_view import DialogueView
-from muddery.worlddata.editor.fixed_form_view import FixedFormView
 from muddery.worlddata.editor.dialogue_sentence_view import DialogueSentenceView
 from muddery.worlddata.editor.dialogue_chain_view import DialogueChainView
 from muddery.worlddata.editor.dialogue_chain_image import DialogueChainImage
@@ -288,25 +286,7 @@ def apply_changes(request):
     """
     Apply the game world's data.
     """
-    def import_syetem_data():
-        """
-        Import all system data files to models.
-        """
-        # system data file's path
-        system_data_path = os.path.join(settings.MUDDERY_DIR, settings.WORLD_DATA_FOLDER)
-
-        # load system data
-        for data_handlers in DATA_SETS.system_data:
-            try:
-                data_handlers.import_from_path(system_data_path, system_data=True)
-            except Exception, e:
-                err_message = "Cannot import game data. %s" % e
-                logger.log_tracemsg(err_message)
-
     try:
-        # reload system data
-        import_syetem_data()
-
         # reload localized strings
         LOCALIZED_STRINGS_HANDLER.reload()
 
@@ -345,12 +325,10 @@ def editor(request):
 @staff_member_required
 def list_view(request):
     try:
-        view = get_page(request)
-        if view.is_valid():
-            if "_back" in request.POST:
-                return view.quit_list(request)
-            else:
-                return view.view_list(request)
+        if "_back" in request.POST:
+            return page_view.quit_list(request)
+        else:
+            return page_view.view_list(request)
     except Exception, e:
         logger.log_tracemsg("Invalid view request: %s" % e)
 
@@ -419,35 +397,6 @@ def add_form(request):
 
 
 @staff_member_required
-def get_page(request):
-    """
-    Get record page view's object.
-
-    Args:
-        request: Http request.
-    Returns:
-        view
-    """
-    try:
-        path_list = request.path.split("/")
-        form_name = path_list[-2]
-    except Exception, e:
-        logger.log_errmsg("Invalid form.")
-        raise http.Http404
-
-    fixed_pages = {"character_attributes_info",
-                   "equipment_attributes_info",
-                   "food_attributes_info"}
-
-    if form_name in fixed_pages:
-        view = FixedPageView(form_name, request)
-    else:
-        view = PageView(form_name, request)
-
-    return view
-
-
-@staff_member_required
 def get_view(request):
     """
     Get form view's object.
@@ -470,14 +419,8 @@ def get_view(request):
         "world_objects": {"CLASS_OBJECT_CREATOR": "object_creators"}
     }
 
-    fixed_forms = {"character_attributes_info",
-                   "equipment_attributes_info",
-                   "food_attributes_info"}
-
     if form_name in relative_forms:
         view = RelativeView(form_name, request, relative_forms[form_name])
-    elif form_name in fixed_forms:
-        view = FixedFormView(form_name, request)
     elif form_name == "game_settings":
         view = SingleFormView(form_name, request)
     elif form_name == "dialogues":

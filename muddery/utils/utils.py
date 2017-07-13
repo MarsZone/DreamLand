@@ -64,25 +64,3 @@ def search_obj_unique_type(type):
     """
     obj = search.search_object_attribute(key="type", strvalue=type, category=settings.DATA_KEY_CATEGORY)
     return obj
-
-
-def is_child(child, parent):
-    """
-    Check if the child class is inherited from the parent.
-
-    Args:
-        child: child class
-        parent: parent class
-
-    Returns:
-        boolean
-    """
-    for base in child.__bases__:
-        if base is parent:
-            return True
-
-    for base in child.__bases__:
-        if is_child(base, parent):
-            return True
-
-    return False
