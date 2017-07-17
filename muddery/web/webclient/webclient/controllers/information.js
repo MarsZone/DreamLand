@@ -86,24 +86,6 @@ var controller = {
         */
     },
 
-    setHungerDescByValue:function(hunger){
-        if(this.valueBetween(hunger,80,100))
-            return _("HUNGER_FULL")
-        if(this.valueBetween(hunger,50,80))
-            return _("HUNGER_HIGH")
-        if(this.valueBetween(hunger,30,50))
-            return _("HUNGER_MEDIUM")
-        if(this.valueBetween(hunger,10,30))
-            return _("HUNGER_LOW")
-        if(this.valueBetween(hunger,0,10))
-            return _("HUNGER_DIE")
-    },
-
-    //check value in
-    valueBetween:function (x, min, max) {
-        return x>=min && x<=max;
-    },
-
     // Set player's equipments.
     setEquipments(equipments) {
         for (var pos in equipments) {

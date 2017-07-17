@@ -246,12 +246,12 @@ var controller = {
                 .attr("text-anchor", "middle")
                 .attr("font-family", "sans-serif")
                 .attr("font-size", function(d, i) {
-                        return (i == current_room_index) ? "18px" : "14px";
+                        return (i == current_room_index) ? "16px" : "14px";
                       })
                 .attr("fill", function(d, i) {
-                        return (i == current_room_index) ? "#7faf3d" : "#d2e3d8";
+                        return (i == current_room_index) ? "white" : "#eee";
                       })
-                .style("text-shadow", ".1em .1em .5em #FFFFFF")
+                .style("text-shadow", ".1em .1em .5em #000000")
                 .text(function(d) {
                         return text2html.clearTags(d["name"]);
                       });
