@@ -121,5 +121,5 @@ var local_string_zh_cn = {
     "HEAD: ": "头：",
     "HAND: ": "手：",
     "CHEST: ": "身：",
-    "LEG: ": "腿：",
+    "LEG: ": "腿：muddery",
 };
