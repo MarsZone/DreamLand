@@ -28,14 +28,15 @@ class DLCharacter(MudderyPlayerCharacter):
         gametime_passed = (gametime.gametime() - self.last_game_time)
         # 28800s-> 8hour realtime=>game time 48hour ->2days
         # 2 days(gametime) will reduce 100 point hunger
+        #if gametime_passed > (gametime.TIMEFACTOR * 288):
         if gametime_passed > (gametime.TIMEFACTOR * 288):
             self.last_game_time = gametime.gametime()
             if self.cattr.hunger > 0:
                 self.cattr.hunger = self.cattr.hunger - 1
             else:
                 self.cattr.hunger = 0
-            if self.cattr.hunger >= self.cattr.hungerMax:
-                self.cattr.hunger = self.cattr.hungerMax
+            if self.cattr.hunger >= self.cattr.max_hunger:
+                self.cattr.hunger = self.cattr.max_hunger
                 # self.msg({"msg": "Debug: gameTime:%s|last_game_time:%s" % (gametime.gametime(), gametime_passed)})
 
     def update_vitality(self):
@@ -48,8 +49,8 @@ class DLCharacter(MudderyPlayerCharacter):
             self.cattr.vitality = self.cattr.vitality + 1
         else:
             self.cattr.vitality = 0
-        if self.cattr.vitality >= self.cattr.vitalityMax:
-            self.cattr.vitality = self.cattr.vitalityMax
+        if self.cattr.vitality >= self.cattr.max_vitality:
+            self.cattr.vitality = self.cattr.max_vitality
 
     def move_to(self, destination, quiet=False,
                 emit_to_obj=None, use_destination=True, to_none=False, move_hooks=True):
@@ -61,7 +62,7 @@ class DLCharacter(MudderyPlayerCharacter):
         if self.cattr.vitality > 10:
             # cost player vitality temp 10
             if self.cattr.vitality > 0:
-                self.cattr.vitality = self.db.vitality - 10
+                self.cattr.vitality = self.cattr.vitality - 10
             if self.cattr.vitality < 0:
                 self.cattr.vitality = 0
 
@@ -74,6 +75,6 @@ class DLCharacter(MudderyPlayerCharacter):
                                                                use_destination,
                                                                to_none,
                                                                move_hooks)
-        else:
-            self.msg({"msg": _("Fail to Moving")})
-            self.show_location()
+        #else:
+            #self.msg({"msg": _("Fail to Moving")})
+            #self.show_location()

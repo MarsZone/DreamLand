@@ -65,7 +65,7 @@ var controller = {
             }
             //Setting Hunger lang
             if(key == 'hunger'){
-                //value = this.setHungerDescByValue(parseInt(value)) + ""
+                value = this.setHungerDescByValue(parseInt(value)) + ""
             }
 
             item.find(".attr_name").text(obj["name"]);
